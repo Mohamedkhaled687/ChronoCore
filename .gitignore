@@ -36,6 +36,7 @@ CMakeLists.txt.user
 # ── IDE & editor files ────────────────────────────────────────────────
 .idea/
 .vscode/
+.qodo/
 *.swp
 *.swo
 *~
