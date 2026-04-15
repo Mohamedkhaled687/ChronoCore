@@ -8,7 +8,6 @@ class Process:
     arrival: float
     burst: float
     priority: int = 0
-    queue_level: int = 0          # for multilevel queue
     remaining: float = field(init=False)
 
     def __post_init__(self) -> None:
@@ -28,7 +27,6 @@ class Process:
             arrival=float(d["arrival"]),
             burst=float(d["burst"]),
             priority=int(d["priority"]) if d.get("priority") is not None else 0,
-            queue_level=int(d["queue_level"]) if d.get("queue_level") is not None else 0,
         )
 
 
