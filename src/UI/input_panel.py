@@ -190,24 +190,22 @@ class InputPanelWidget(QFrame):
         results_row = QHBoxLayout()
         results_row.setSpacing(16)
 
-        # AVG WAIT card
-        self.avg_wait_card = self._make_metric_card("AVG WAIT", "0.00", "ms", "~0.0ms FROM PREV")
+        self.avg_wait_card = self._make_metric_card("AVG WAIT", "0.00", "ms")
         results_row.addWidget(self.avg_wait_card["frame"])
 
-        # AVG TAT card
-        self.avg_tat_card = self._make_metric_card("AVG TAT", "0.00", "ms", "~0.0ms FROM PREV")
+        self.avg_tat_card = self._make_metric_card("AVG TAT", "0.00", "ms")
         results_row.addWidget(self.avg_tat_card["frame"])
 
         parent_layout.addLayout(results_row)
 
-    def _make_metric_card(self, title: str, value: str, unit: str, delta: str) -> dict:
+    def _make_metric_card(self, title: str, value: str, unit: str) -> dict:
         frame = QFrame()
         frame.setStyleSheet(
             f"QFrame {{ background-color: {CARD_BG}; border: 1px solid {CARD_BORDER}; "
             f"border-radius: 8px; }}"
         )
         frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        frame.setFixedHeight(90)
+        frame.setFixedHeight(72)
 
         vbox = QVBoxLayout(frame)
         vbox.setContentsMargins(14, 10, 14, 10)
@@ -236,13 +234,7 @@ class InputPanelWidget(QFrame):
         value_row.addStretch()
         vbox.addLayout(value_row)
 
-        lbl_delta = QLabel(delta)
-        lbl_delta.setStyleSheet(
-            f"color: {TEXT_SECONDARY}; font-size: 10px; background: transparent; border: none;"
-        )
-        vbox.addWidget(lbl_delta)
-
-        return {"frame": frame, "value": lbl_value, "delta": lbl_delta}
+        return {"frame": frame, "value": lbl_value}
 
     # ------------------------------------------------------------------
     # Styling helpers
@@ -317,17 +309,12 @@ class InputPanelWidget(QFrame):
         self,
         avg_wait: float,
         avg_tat: float,
-        delta_wait: float,
-        delta_tat: float,
+        delta_wait: float = 0.0,
+        delta_tat: float = 0.0,
     ) -> None:
         """Update the results sub-panel with computed metrics."""
         self.avg_wait_card["value"].setText(f"{avg_wait:.2f}")
         self.avg_tat_card["value"].setText(f"{avg_tat:.2f}")
-
-        sign_w = "+" if delta_wait >= 0 else ""
-        sign_t = "+" if delta_tat >= 0 else ""
-        self.avg_wait_card["delta"].setText(f"~{sign_w}{delta_wait:.1f}ms FROM PREV")
-        self.avg_tat_card["delta"].setText(f"~{sign_t}{delta_tat:.1f}ms FROM PREV")
 
     def set_status_badge(self, status: str) -> None:
         """Set the header badge text/color: 'READY', 'RUNNING', 'FINISHED'."""

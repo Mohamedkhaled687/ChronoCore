@@ -40,7 +40,7 @@ from src.UI.styles import (
     BORDER_RADIUS,
 )
 
-COLUMNS = ["Process", "Arrival", "Burst", "Remaining", "Priority", "Status"]
+COLUMNS = ["Process", "Arrival", "Burst", "Remaining", "Priority", "Status", "Wait", "Turnaround"]
 _STATUS_COLORS = {
     "RUNNING": STATUS_RUNNING,
     "WAITING": STATUS_WAITING,
@@ -108,13 +108,16 @@ class ActiveStateMonitorWidget(QFrame):
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         h = self.table.horizontalHeader()
-        h.setStretchLastSection(True)
+        h.setStretchLastSection(False)
         h.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         h.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         h.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         h.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         h.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         h.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        h.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
+        h.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setColumnWidth(5, 120)
 
         outer.addWidget(self.table, stretch=1)
 
@@ -211,6 +214,12 @@ class ActiveStateMonitorWidget(QFrame):
 
             status_lbl = self._make_status_label(p.get("status", "WAITING"))
             self.table.setCellWidget(row, 5, status_lbl)
+
+            wait_text = f"{p.get('waiting_time', 0.0):.2f}" if p.get("waiting_time") is not None else ""
+            self.table.setItem(row, 6, QTableWidgetItem(wait_text))
+
+            tat_text = f"{p.get('turnaround_time', 0.0):.2f}" if p.get("turnaround_time") is not None else ""
+            self.table.setItem(row, 7, QTableWidgetItem(tat_text))
 
             self.table.setRowHeight(row, 44)
 
