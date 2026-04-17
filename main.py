@@ -1,14 +1,11 @@
-"""
-ChronoCore — Application Entry Point
-
-Launches the PySide6 QApplication and shows the main window.
-"""
+"""ChronoCore application entry point."""
 
 import sys
 
-from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication
 
+from src.Controllers import SchedulerController
 from src.UI.main_window import MainWindow
 
 
@@ -20,8 +17,10 @@ def main() -> None:
     app.setFont(font)
 
     window = MainWindow()
-    window.show()
+    controller = SchedulerController(window)
+    controller.bind_window(window)
 
+    window.show()
     sys.exit(app.exec())
 
 
