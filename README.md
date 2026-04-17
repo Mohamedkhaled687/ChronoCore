@@ -15,3 +15,5 @@ Use one of these options to produce a standalone `ChronoCore.exe`:
   - Open PowerShell in the project root.
   - Run:
     - `.\scripts\build_windows_exe.ps1`
+
+The build script uses a slim PyInstaller profile that keeps only the Qt modules used by this app (`QtCore`, `QtGui`, `QtWidgets`) to reduce final artifact size.
