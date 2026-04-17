@@ -46,6 +46,7 @@ class SchedulerController(QObject):
     # ------------------------------------------------------------------
     def bind_window(self, window) -> None:
         """Connect all UI<->controller signals in one place."""
+        # Connect the UI signals to the controller slots
         window.top_bar.run_simulation_clicked.connect(self.start_simulation)
         window.top_bar.stop_simulation_clicked.connect(self.stop_simulation)
         window.top_bar.simulation_mode_changed.connect(self.set_mode)
@@ -54,6 +55,7 @@ class SchedulerController(QObject):
         window.input_panel.process_added.connect(self.add_process)
         window.sidebar.new_scenario_clicked.connect(self.reset_scenario)
 
+        # Connect the controller signals to the UI slots
         self.progress_updated.connect(window.top_bar.set_progress)
         self.process_table_updated.connect(window.active_monitor.update_process_table)
         self.total_processes_changed.connect(window.active_monitor.set_total_processes)

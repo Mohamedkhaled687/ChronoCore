@@ -172,7 +172,7 @@ class ActiveStateMonitorWidget(QFrame):
         color = _STATUS_COLORS.get(status.upper(), TEXT_SECONDARY)
         lbl = QLabel(status.upper())
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        lbl.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
         lbl.setStyleSheet(
             f"color: {color}; font-weight: 700; background: transparent; "
             f"letter-spacing: 0.5px;"
