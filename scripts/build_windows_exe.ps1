@@ -74,5 +74,4 @@ if (-not (Test-Path "dist\ChronoCore.exe")) {
     throw "Build failed: dist\ChronoCore.exe was not created."
 }
 
-Compress-Archive -Path "dist\ChronoCore.exe" -DestinationPath "dist\ChronoCore-windows.zip" -Force
-Write-Host "Build complete: dist\ChronoCore.exe and dist\ChronoCore-windows.zip"
+Write-Host "Build complete: dist\ChronoCore.exe"

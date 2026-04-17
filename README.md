@@ -6,10 +6,7 @@ Use one of these options to produce a standalone `ChronoCore.exe`:
 
 - **GitHub Actions (recommended):**
   - Run the `Build Windows EXE` workflow.
-  - Download the `ChronoCore-windows-exe` artifact.
-  - The artifact includes:
-    - `dist/ChronoCore.exe`
-    - `dist/ChronoCore-windows.zip`
+  - Download the `ChronoCore` artifact; it contains `ChronoCore.exe` only.
 
 - **Local Windows machine:**
   - Open PowerShell in the project root.
