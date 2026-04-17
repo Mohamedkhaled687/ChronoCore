@@ -278,18 +278,42 @@ class InputPanelWidget(QFrame):
         self.lbl_quantum.setVisible(show_quantum)
         self.input_quantum.setVisible(show_quantum)
 
+    def _apply_quantum_style(self) -> None:
+        """Visually indicate if quantum is editable or locked."""
+        if self._quantum_locked:
+            self.input_quantum.setStyleSheet(
+                """
+                QDoubleSpinBox {
+                    background-color: #E5E7EB;
+                    color: #6B7280;
+                    border: 1px solid #D1D5DB;
+                    border-radius: 8px;
+                    padding: 4px 8px;
+                }
+                """
+            )
+            return
+
+        self.input_quantum.setStyleSheet("")
+
     # ------------------------------------------------------------------
     # Slots
     # ------------------------------------------------------------------
     def _on_add_process(self) -> None:
+        pid = self.input_pid.text().strip()
+        if not pid:
+            return
+
         data = {
-            "pid": self.input_pid.text().strip(),
+            "pid": pid,
             "arrival": self.input_arrival.value(),
             "burst": self.input_burst.value(),
             "priority": self.input_priority.value() if self._current_algo == "priority" else None,
             "quantum": self.input_quantum.value() if self._current_algo == "round_robin" else None,
         }
         self.process_added.emit(data)
+        if self._current_algo == "round_robin" and not self._quantum_locked:
+            self.set_quantum_locked(True)
         self.clear_form()
 
     # ------------------------------------------------------------------
@@ -325,6 +349,7 @@ class InputPanelWidget(QFrame):
         """Disable quantum input once a simulation has started (Round Robin rule)."""
         self._quantum_locked = locked
         self.input_quantum.setEnabled(not locked)
+        self._apply_quantum_style()
 
     def clear_form(self) -> None:
         """Reset all input fields to defaults."""

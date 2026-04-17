@@ -22,6 +22,7 @@ class SchedulerController(QObject):
     results_updated = Signal(float, float, float, float)
     status_changed = Signal(str)
     system_health_changed = Signal(bool)
+    quantum_lock_changed = Signal(bool)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
@@ -29,6 +30,7 @@ class SchedulerController(QObject):
         self.algorithm = AlgorithmKey.FCFS
         self.preemptive = False
         self.quantum = 1.0
+        self._rr_quantum_initialized = False
 
         self._processes: list[ProcessSpec] = []
         self._insertion_counter = 0
@@ -64,10 +66,11 @@ class SchedulerController(QObject):
         self.results_updated.connect(window.input_panel.update_results)
         self.status_changed.connect(window.input_panel.set_status_badge)
         self.system_health_changed.connect(window.status_bar.set_system_status)
+        self.quantum_lock_changed.connect(window.input_panel.set_quantum_locked)
 
-        # Round-Robin quantum rule: lock once running, unlock on reset/finish.
-        window.top_bar.run_simulation_clicked.connect(lambda: window.input_panel.set_quantum_locked(True))
-        window.sidebar.new_scenario_clicked.connect(lambda: window.input_panel.set_quantum_locked(False))
+        # Round-Robin quantum rule: lock once initialized or while running, unlock on reset.
+        window.top_bar.run_simulation_clicked.connect(lambda: self.quantum_lock_changed.emit(True))
+        window.sidebar.new_scenario_clicked.connect(lambda: self.quantum_lock_changed.emit(False))
 
     # ------------------------------------------------------------------
     # UI slots
@@ -79,6 +82,8 @@ class SchedulerController(QObject):
     @Slot(str)
     def set_algorithm(self, algorithm: str) -> None:
         self.algorithm = AlgorithmKey(algorithm)
+        if self.algorithm is AlgorithmKey.ROUND_ROBIN and self._rr_quantum_initialized:
+            self.quantum_lock_changed.emit(True)
 
     @Slot(bool)
     def set_preemptive(self, enabled: bool) -> None:
@@ -99,7 +104,12 @@ class SchedulerController(QObject):
         )
         self._insertion_counter += 1
 
-        if payload.get("quantum") is not None:
+        if self.algorithm is AlgorithmKey.ROUND_ROBIN and payload.get("quantum") is not None:
+            if not self._rr_quantum_initialized:
+                self.quantum = float(payload["quantum"])
+                self._rr_quantum_initialized = True
+                self.quantum_lock_changed.emit(True)
+        elif payload.get("quantum") is not None:
             self.quantum = float(payload["quantum"])
 
         self._processes.append(spec)
@@ -153,6 +163,7 @@ class SchedulerController(QObject):
         self._insertion_counter = 0
         self._prev_avg_wait = 0.0
         self._prev_avg_tat = 0.0
+        self._rr_quantum_initialized = False
 
         self.progress_updated.emit(0)
         self.process_table_updated.emit([])
