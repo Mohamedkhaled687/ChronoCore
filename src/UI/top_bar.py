@@ -29,6 +29,8 @@ from src.UI.styles import (
     SURFACE_WHITE,
     TEXT_SECONDARY,
     CARD_BORDER,
+    WARNING_ORANGE,
+    WARNING_ORANGE_HOVER,
 )
 
 
@@ -150,6 +152,7 @@ class TopBarWidget(QFrame):
         """
         )
         self._update_toggle_styles()
+        self._update_stop_resume_button_style()
 
         self.btn_stop.setStyleSheet(
             f"QPushButton {{ background-color: {DANGER_RED}; color: {TEXT_LIGHT}; "
@@ -174,6 +177,25 @@ class TopBarWidget(QFrame):
         )
         self.btn_live.setStyleSheet(active_style if self._current_mode == "live" else inactive_style)
         self.btn_static.setStyleSheet(inactive_style if self._current_mode == "live" else active_style)
+
+    def _update_stop_resume_button_style(self) -> None:
+        """Update Stop/Resume button style based on pause state."""
+        if self._is_paused:
+            # Resume style - green/teal color to indicate continue action
+            self.btn_stop.setStyleSheet(
+                f"QPushButton {{ background-color: {WARNING_ORANGE}; color: {TEXT_LIGHT}; "
+                f"font-weight: 600; border-radius: 6px; padding: 0 18px; }}"
+                f"QPushButton:hover {{ background-color: {WARNING_ORANGE_HOVER}; }}"
+            )
+            self.btn_stop.setText("Resume")
+        else:
+            # Stop style - red color to indicate halt action
+            self.btn_stop.setStyleSheet(
+                f"QPushButton {{ background-color: {DANGER_RED}; color: {TEXT_LIGHT}; "
+                f"font-weight: 600; border-radius: 6px; padding: 0 18px; }}"
+                f"QPushButton:hover {{ background-color: {DANGER_RED_HOVER}; }}"
+            )
+            self.btn_stop.setText("Stop")
 
     # ------------------------------------------------------------------
     # Slots
