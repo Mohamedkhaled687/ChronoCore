@@ -19,6 +19,7 @@ class SchedulerController(QObject):
     total_processes_changed = Signal(int)
     cpu_load_changed = Signal(int)
     gantt_block_added = Signal(str, float, float, bool)
+    gantt_chart_cleared = Signal()
     results_updated = Signal(float, float, float, float)
     status_changed = Signal(str)
     system_health_changed = Signal(bool)
@@ -65,6 +66,7 @@ class SchedulerController(QObject):
         self.total_processes_changed.connect(window.active_monitor.set_total_processes)
         self.cpu_load_changed.connect(window.active_monitor.set_cpu_load)
         self.gantt_block_added.connect(window.gantt_chart.add_gantt_block)
+        self.gantt_chart_cleared.connect(window.gantt_chart.clear_chart)
         self.results_updated.connect(window.input_panel.update_results)
         self.status_changed.connect(window.input_panel.set_status_badge)
         self.system_health_changed.connect(window.status_bar.set_system_status)
@@ -130,6 +132,8 @@ class SchedulerController(QObject):
 
         self.system_health_changed.emit(True)
         self.status_changed.emit("RUNNING")
+
+        self.gantt_chart_cleared.emit()  # Clear chart first
 
         if self.mode is SimulationMode.STATIC:
             self._run_static()
