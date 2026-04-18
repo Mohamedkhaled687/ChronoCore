@@ -52,6 +52,7 @@ class TopBarWidget(QFrame):
         super().__init__(parent)
         self.setFixedHeight(52)
         self._current_mode = "live"
+        self._is_paused = False  # Track pause state
         self._build_ui()
         self._apply_styles()
 
@@ -154,11 +155,6 @@ class TopBarWidget(QFrame):
         self._update_toggle_styles()
         self._update_stop_resume_button_style()
 
-        self.btn_stop.setStyleSheet(
-            f"QPushButton {{ background-color: {DANGER_RED}; color: {TEXT_LIGHT}; "
-            f"font-weight: 600; border-radius: 6px; padding: 0 18px; }}"
-            f"QPushButton:hover {{ background-color: {DANGER_RED_HOVER}; }}"
-        )
         self.btn_run.setStyleSheet(
             f"QPushButton {{ background-color: {ACCENT_TEAL}; color: {TEXT_LIGHT}; "
             f"font-weight: 600; border-radius: 6px; padding: 0 18px; }}"
@@ -221,3 +217,12 @@ class TopBarWidget(QFrame):
     def get_simulation_mode(self) -> str:
         """Return current mode: 'live' or 'static'."""
         return self._current_mode
+
+    def is_paused(self) -> bool:
+        """Return whether simulation is currently paused."""
+        return self._is_paused
+
+    def reset_pause_state(self) -> None:
+        """Reset pause state (called when simulation finishes)."""
+        self._is_paused = False
+        self._update_stop_resume_button_style()
