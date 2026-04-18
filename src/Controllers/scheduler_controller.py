@@ -19,6 +19,7 @@ class SchedulerController(QObject):
     total_processes_changed = Signal(int)
     cpu_load_changed = Signal(int)
     gantt_block_added = Signal(str, float, float, bool)
+    gantt_chart_cleared = Signal()
     results_updated = Signal(float, float, float, float)
     status_changed = Signal(str)
     system_health_changed = Signal(bool)
@@ -35,6 +36,7 @@ class SchedulerController(QObject):
         self._processes: list[ProcessSpec] = []
         self._insertion_counter = 0
         self._runtime: Optional[LiveRuntimeState] = None
+        self._paused = False  # Track pause state
 
         self._prev_avg_wait = 0.0
         self._prev_avg_tat = 0.0
@@ -51,6 +53,7 @@ class SchedulerController(QObject):
         # Connect the UI signals to the controller slots
         window.top_bar.run_simulation_clicked.connect(self.start_simulation)
         window.top_bar.stop_simulation_clicked.connect(self.stop_simulation)
+        window.top_bar.resume_simulation_clicked.connect(self.resume_simulation)
         window.top_bar.simulation_mode_changed.connect(self.set_mode)
         window.sidebar.algorithm_selected.connect(self.set_algorithm)
         window.sidebar.preemptive_toggled.connect(self.set_preemptive)
@@ -63,6 +66,7 @@ class SchedulerController(QObject):
         self.total_processes_changed.connect(window.active_monitor.set_total_processes)
         self.cpu_load_changed.connect(window.active_monitor.set_cpu_load)
         self.gantt_block_added.connect(window.gantt_chart.add_gantt_block)
+        self.gantt_chart_cleared.connect(window.gantt_chart.clear_chart)
         self.results_updated.connect(window.input_panel.update_results)
         self.status_changed.connect(window.input_panel.set_status_badge)
         self.system_health_changed.connect(window.status_bar.set_system_status)
@@ -123,8 +127,13 @@ class SchedulerController(QObject):
         if not self._processes:
             return
 
+        # used to toggle between states (false @ running & resuming, true at stop or new scenario)
+        self._paused = False
+
         self.system_health_changed.emit(True)
         self.status_changed.emit("RUNNING")
+
+        self.gantt_chart_cleared.emit()  # Clear chart first
 
         if self.mode is SimulationMode.STATIC:
             self._run_static()
@@ -152,8 +161,17 @@ class SchedulerController(QObject):
     def stop_simulation(self) -> None:
         if self._timer.isActive():
             self._timer.stop()
-        self.status_changed.emit("READY")
+        self._paused = True
+        self.status_changed.emit("PAUSED")
         self.cpu_load_changed.emit(0)
+
+    @Slot()
+    def resume_simulation(self) -> None:
+        if self._paused and self._runtime is not None:
+            self._paused = False
+            self._timer.start()
+            self.status_changed.emit("RUNNING")
+            self.system_health_changed.emit(True)
 
     @Slot()
     def reset_scenario(self) -> None:
@@ -164,6 +182,7 @@ class SchedulerController(QObject):
         self._prev_avg_wait = 0.0
         self._prev_avg_tat = 0.0
         self._rr_quantum_initialized = False
+        self._paused = False
 
         self.progress_updated.emit(0)
         self.process_table_updated.emit([])
@@ -248,5 +267,6 @@ class SchedulerController(QObject):
 
         if snap.completed:
             self._timer.stop()
+            self._paused = False
             self.status_changed.emit("FINISHED")
             self.cpu_load_changed.emit(0)
