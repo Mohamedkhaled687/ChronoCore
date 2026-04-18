@@ -42,11 +42,13 @@ class TopBarWidget(QFrame):
         simulation_mode_changed(str): "live" or "static"
         run_simulation_clicked(): user pressed Run
         stop_simulation_clicked(): user pressed Stop
+        resume_simulation_clicked(): user pressed Resume
     """
 
     simulation_mode_changed = Signal(str)
     run_simulation_clicked = Signal()
     stop_simulation_clicked = Signal()
+    resume_simulation_clicked = Signal()
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -136,8 +138,8 @@ class TopBarWidget(QFrame):
         layout.addWidget(self.btn_run)
 
         # --- Connect signals ---
-        self.btn_run.clicked.connect(self.run_simulation_clicked.emit)
-        self.btn_stop.clicked.connect(self.stop_simulation_clicked.emit)
+        self.btn_run.clicked.connect(self._on_run_clicked)
+        self.btn_stop.clicked.connect(self._on_stop_resume_clicked)
 
     # ------------------------------------------------------------------
     # Styling
@@ -204,6 +206,25 @@ class TopBarWidget(QFrame):
         self.btn_static.setChecked(mode == "static")
         self._update_toggle_styles()
         self.simulation_mode_changed.emit(mode)
+
+    def _on_stop_resume_clicked(self) -> None:
+        """Handle Stop/Resume button click - toggles pause state."""
+        if self._is_paused:
+            # Currently paused, so resume
+            self._is_paused = False
+            self.resume_simulation_clicked.emit()
+        else:
+            # Currently running, so stop/pause
+            self._is_paused = True
+            self.stop_simulation_clicked.emit()
+
+        self._update_stop_resume_button_style()
+
+    def _on_run_clicked(self) -> None:
+        """Handle Run button click - resets pause state."""
+        self._is_paused = False
+        self._update_stop_resume_button_style()
+        self.run_simulation_clicked.emit()
 
     # ------------------------------------------------------------------
     # Public API (called by backend controllers)
